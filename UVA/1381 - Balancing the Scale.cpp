@@ -69,8 +69,6 @@ bool check(int N,int pos)
 }
 /*------------------------------------------------*/
 
-
-
 bool vis[1<<17];
 vector<int>masks;
 
@@ -113,7 +111,6 @@ int main()
 //#endif
 
     select4(0, {});
-
     int a=0;
     int z=0;
     while(sf(a) && a)
