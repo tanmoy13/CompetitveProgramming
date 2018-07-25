@@ -1,3 +1,9 @@
+/*
+
+Solution idea: https://github.com/mostafa-saad/MyCompetitiveProgramming/blob/master/UVA/UVA_1381.txt
+
+*/
+
 #include <bits/stdc++.h>
 // #include <ext/pb_ds/assoc_container.hpp>
 // #include <ext/pb_ds/tree_policy.hpp>
