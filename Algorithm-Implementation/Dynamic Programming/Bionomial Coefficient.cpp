@@ -1,14 +1,12 @@
-int DP[Size][Size];
+ll dp[2001][2001];
 
-void binomialCoeff() {
-    CLR(DP,0);
-    for (int i = 0; i <= n; i++) {
-        for (int j = 0; j <= min(i, k); j++) {
-            if (j == 0 || j == i) {
-                DP[i][j] = 1;
-            } else {
-                DP[i][j] = DP[i - 1][j - 1] + DP[i - 1][j];
-            }
-        }
-    }
+ll nCr(int n, int r)
+{
+    if(r==0) return 1;
+    if(n==r) return 1;
+    ll &ret=dp[n][r];
+    if(ret!=-1) return ret;
+    ret=nCr(n-1,r)%MOD+nCr(n-1,r-1)%MOD; //recurrence relation
+    ret%=MOD;
+    return ret;
 }
