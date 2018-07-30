@@ -167,8 +167,6 @@ int decomposeTree(int u)
 }
 
 
-///The below segment depends on the problem
-
 int ans[maxnode];
 
 void update(int u)
@@ -231,7 +229,6 @@ int main()
 
     return 0;
 }
-
 
 
 
