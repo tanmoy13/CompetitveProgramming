@@ -1,130 +1,157 @@
+/*
+    - Always remember to execute trie[nodeCnt].clear(); in multiple test case problem
+      In insertTrie function
+    - Function call order in main function
+            insertTrie(str,i);
+            calcFailFunction();
+            match_text(text);
+            push_up();
+*/
+
 const int Size = 1000005; /// Maximum Text Length
 const int NODE = 250005; /// Maximum Nodes
-const int MXQ = 505; /// Maximum Patterns
-const int MXL = 505; /// Maximum Length Of Pattern
-const int MXCHR = 26; /// Maximum Characters
+const int MXQ = 1005; /// Maximum Patterns
+const int MXL = 1005; /// Maximum Length Of Pattern
+const int MXCHR = 53; /// Maximum Characters
 
-struct node{
+struct node
+{
     int val;
-    vector<int> endList; /// List of patterns ends here
+    bool endmark;
+    int next[53];
     int endCnt; /// Number of times the prefix match with text
-    int child[MXCHR];
-    void clear(){
-        CLR(child, 0);
-        val = endCnt = 0;
-        endList.clear();
+    vector<int>endsList; /// List of patterns ends here
+    void clear()
+    {
+        endmark=0;
+        endCnt=0;
+        ms(next,0);
+        endsList.clear();
     }
-}trie[NODE];
+} trie[NODE];
 
-int qfound[MXQ]; /// How many times i'th pattern matched
-vector<int> lvlNodes; /// List of nodes sorted by level
+int get_name(char ch)
+{
+    if(ch>='A' && ch<='Z')
+        return 26+(ch-'A');
+    return ch-'a';
+}
 
-struct AhoCorasick{
-    int curNodeId, root, fail[NODE], par[NODE];
+int root=0,nodeCnt=0; ///Root node and total node count of the trie tree
 
-    void clear(){
-        trie[root].clear();
-        root = curNodeId = 0;
-        lvlNodes.clear();
-        CLR(qfound,0);
-    }
-
-    int getname(char ch){
-        return (ch-'a');
-    }
-
-    void addTrie(string s, int id){
-        /// Add string s to the trie in general way
-        int len = SZ(s);
-        int cur = root;
-        FOR(i,0,len-1){
-            int c = getname(s[i]);
-            if(trie[cur].child[c] == 0){
-                curNodeId++;
-                trie[curNodeId].clear();
-                trie[curNodeId].val = c;
-                trie[cur].child[c] = curNodeId;
-            }
-            cur = trie[cur].child[c];
+void insertTrie(string &str, int id)
+{
+    /// Add string str to the trie in general way
+    int cur=root;
+    for(int i=0; i<SZ(str); i++)
+    {
+        int a=get_name(str[i]);
+        if(trie[cur].next[a]==0)
+        {
+            nodeCnt++;
+            trie[cur].next[a]=nodeCnt;
+            trie[nodeCnt].clear();
+            trie[nodeCnt].val=a;
         }
-        trie[cur].endList.pb(id);
+        cur=trie[cur].next[a];
     }
+    trie[cur].endmark=1;
+    trie[cur].endsList.pb(id);
+}
 
-    void calcFailFunction(){
-        queue<int> Q;
-        Q.push(root);
-        while(!Q.empty()){
-            int s = Q.front();
-            Q.pop();
-            lvlNodes.pb(s);
-            /// Add all the child to the queue:
-            FOR(i,0,MXCHR-1){
-                int t = trie[s].child[i];
-                if(t != 0){
-                    Q.push(t);
-                    par[t] = s;
-                }
-            }
+vector<int>lvlnode; /// List of nodes sorted by level
 
-            if(s == 0){ /// Handle special case when s is root
-                fail[s] = 0;
-                par[s] = 0;
-                continue;
-            }
+
+char ss[Size];
+int fail[NODE],par[NODE],level[NODE];
+
+
+int go_to(int u, int name) ///Return the appropriate position for the char name
+{
+    while(u!=0 && trie[u].next[name]!=0)
+        u=fail[u];
+    return trie[u].next[name];
+}
+
+void calcFailFunction() ///This bfs calculates failure function on trie tree
+{
+    queue<int>Q;
+    Q.push(root);
+    par[root]=root;
+    level[root]=0;
+    fail[root]=root;
+    while(!Q.empty())
+    {
+        int u=Q.front();
+        Q.pop();
+        /// Add all the child to the queue:
+        for(int i=0; i<MXCHR; i++)
+        {
+            int v=trie[u].next[i];
+            if(v==0) continue;
+            par[v]=u;
+            level[v]=level[u]+1;
 
             /// Find fall back of s:
-            int p = par[s];
-            int val = trie[s].val;
-            int f = fail[p];
-            /// Fall back till you found a node who has got val as a child
-            while(f != 0 && trie[f].child[val] == 0){
-                f = fail[f];
-            }
-            fail[s] = trie[f].child[val];
-            if(s == fail[s]) fail[s] = 0; /// Self fall back not allowed
-        }
-    }
-
-    /// Returns the next state
-    int goTo(int state, int c){
-        if(trie[state].child[c] != 0){ /// No need to fall back
-            return trie[state].child[c];
+            fail[v]=go_to(fail[u],i);
+            if(fail[v]==v) /// Self fall back not allowed
+                fail[v]=0;
+            if(level[v]==1) /// fail of first level nodes is always root
+                fail[v]=0;
+            Q.push(v);
         }
 
-        /// Fall back now:
-        int f = fail[state];
-        while(f != 0 && trie[f].child[c] == 0){
-            f = fail[f];
-        }
-        return trie[f].child[c];
     }
+}
 
-    void pushUp(){
-        int len = SZ(lvlNodes);
-        ROF(i,0,len-1){
-            int u = lvlNodes[i];
-            int f = fail[u];
-            /// The prefix of my fall back node matches with my suffix
-            /// So every time i match with text, my fall back node also match
-            trie[f].endCnt += trie[u].endCnt;
-            FOR(j,0,SZ(trie[u].endList)-1){
-                int qid = trie[u].endList[j];
-                qfound[qid] += trie[u].endCnt;
-            }
-        }
-    }
+ll ans[1005]; /// How many times i'th pattern matched
 
-    /// Iterate through the whole text and find all the matchings
-    void findmatching(string s){
-        int cur = root, idx = 0;
-        int len = SZ(s);
-        while(idx<len){
-            int c = getname(s[idx]);
-            int prv = cur;
-            cur = goTo(cur, c);
-            trie[cur].endCnt++;
-            idx++;
-        }
-        pushUp();
+void match_text(string &str) /// Iterate through the whole text and find all the matchings
+{
+    int cur=root;
+    for(int i=0; i<SZ(str); i++)
+    {
+        int a=get_name(str[i]);
+        if(trie[cur].next[a]!=0)
+            cur=trie[cur].next[a];
+        else
+            cur=go_to(par[cur],a);
+        if(trie[cur].endsList.size())
+            lvlnode.pb(cur);
+        trie[cur].endCnt=1;
     }
-}acorasick;
+}
+
+void push_up()
+{
+    sort(all(lvlnode));
+    UNIQUE(lvlnode);
+    sort(all(lvlnode),[](int a, int b)
+    {
+        return level[a]<level[b];
+    });
+
+    /// The prefix of my fall back node matches with my suffix
+    /// So every time i match with text, my fall back node also match
+
+    for(int i=SZ(lvlnode)-1; i>=0; i--)
+    {
+        int u=lvlnode[i];
+        if(trie[u].endCnt)
+            trie[fail[u]].endCnt=1;
+        for(int j=0; j<SZ(trie[u].endsList); j++)
+        {
+            int v=trie[u].endsList[j];
+            ans[v]=trie[u].endCnt;
+        }
+    }
+}
+
+void allclear()
+{
+    root=0;
+    nodeCnt=0;
+    trie[root].clear();
+    lvlnode.clear();
+    ms(ans,0);
+}
