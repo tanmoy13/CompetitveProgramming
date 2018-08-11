@@ -1,9 +1,7 @@
 /*
-
     Author: Tanmoy Datta
     Solution Idea:
         - This one is the straight forward problem for Aho-Chorasick String matching algorithm.
-
 */
 
 #include <bits/stdc++.h>
@@ -102,7 +100,7 @@ struct node
 {
     int val;
     bool endmark;
-    int next[53];
+    int next[MXCHR];
     int endCnt; /// Number of times the prefix match with text
     vector<int>endsList; /// List of patterns ends here
     void clear()
@@ -152,7 +150,7 @@ int fail[NODE],par[NODE],level[NODE];
 
 int go_to(int u, int name) ///Return the appropriate position for the char name
 {
-    while(u!=0 && trie[u].next[name]!=0)
+    while(u!=0 && trie[u].next[name]==0)
         u=fail[u];
     return trie[u].next[name];
 }
@@ -199,7 +197,7 @@ void match_text(string &str) /// Iterate through the whole text and find all the
         if(trie[cur].next[a]!=0)
             cur=trie[cur].next[a];
         else
-            cur=go_to(par[cur],a);
+            cur=go_to(fail[cur],a);
         if(trie[cur].endsList.size())
             lvlnode.pb(cur);
         trie[cur].endCnt=1;
@@ -275,3 +273,4 @@ int main()
     }
     return 0;
 }
+
