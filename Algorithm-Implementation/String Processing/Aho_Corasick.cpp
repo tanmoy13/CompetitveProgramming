@@ -8,17 +8,17 @@
             push_up();
 */
 
-const int Size = 1000005; /// Maximum Text Length
+const int Size = 1000006; /// Maximum Text Length
 const int NODE = 250005; /// Maximum Nodes
 const int MXQ = 1005; /// Maximum Patterns
 const int MXL = 1005; /// Maximum Length Of Pattern
-const int MXCHR = 53; /// Maximum Characters
+const int MXCHR = 52; /// Maximum Characters
 
 struct node
 {
     int val;
     bool endmark;
-    int next[53];
+    int next[MXCHR];
     int endCnt; /// Number of times the prefix match with text
     vector<int>endsList; /// List of patterns ends here
     void clear()
@@ -32,9 +32,10 @@ struct node
 
 int get_name(char ch)
 {
+    if(ch>='a' && ch<='z')
+        return ch-'a';
     if(ch>='A' && ch<='Z')
         return 26+(ch-'A');
-    return ch-'a';
 }
 
 int root=0,nodeCnt=0; ///Root node and total node count of the trie tree
@@ -68,7 +69,7 @@ int fail[NODE],par[NODE],level[NODE];
 
 int go_to(int u, int name) ///Return the appropriate position for the char name
 {
-    while(u!=0 && trie[u].next[name]!=0)
+    while(u!=0 && trie[u].next[name]==0)
         u=fail[u];
     return trie[u].next[name];
 }
@@ -83,6 +84,7 @@ void calcFailFunction() ///This bfs calculates failure function on trie tree
     while(!Q.empty())
     {
         int u=Q.front();
+        lvlnode.pb(u);
         Q.pop();
         /// Add all the child to the queue:
         for(int i=0; i<MXCHR; i++)
@@ -104,7 +106,7 @@ void calcFailFunction() ///This bfs calculates failure function on trie tree
     }
 }
 
-ll ans[1005]; /// How many times i'th pattern matched
+ll ans[MXQ]; /// How many times i'th pattern matched
 
 void match_text(string &str) /// Iterate through the whole text and find all the matchings
 {
@@ -115,21 +117,18 @@ void match_text(string &str) /// Iterate through the whole text and find all the
         if(trie[cur].next[a]!=0)
             cur=trie[cur].next[a];
         else
-            cur=go_to(par[cur],a);
-        if(trie[cur].endsList.size())
-            lvlnode.pb(cur);
-        trie[cur].endCnt=1;
+            cur=go_to(fail[cur],a);
+        trie[cur].endCnt+=1;
     }
+}
+
+bool cmp(int a, int b)
+{
+    return level[a]<level[b];
 }
 
 void push_up()
 {
-    sort(all(lvlnode));
-    UNIQUE(lvlnode);
-    sort(all(lvlnode),[](int a, int b)
-    {
-        return level[a]<level[b];
-    });
 
     /// The prefix of my fall back node matches with my suffix
     /// So every time i match with text, my fall back node also match
@@ -138,20 +137,12 @@ void push_up()
     {
         int u=lvlnode[i];
         if(trie[u].endCnt)
-            trie[fail[u]].endCnt=1;
+            trie[fail[u]].endCnt+=trie[u].endCnt;
         for(int j=0; j<SZ(trie[u].endsList); j++)
         {
             int v=trie[u].endsList[j];
-            ans[v]=trie[u].endCnt;
+            ans[v]+=trie[u].endCnt;
         }
     }
 }
 
-void allclear()
-{
-    root=0;
-    nodeCnt=0;
-    trie[root].clear();
-    lvlnode.clear();
-    ms(ans,0);
-}
