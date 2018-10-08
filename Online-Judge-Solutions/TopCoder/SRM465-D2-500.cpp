@@ -1,3 +1,12 @@
+/*
+    Author: Tanmoy Datta
+    Solution Idea:
+        - Let distance between two center is d. Then rectangle are non intersecting when the condition hold is a/2 + b/2 = floor(d) . Here a and b is the side length 
+          of two square. 
+        - Now we can simplify the equation like this a + b = floor(2*d). Now answer for our problem is how many solution we can get where a + b = floor(2*d) and
+          a>1 and b>1 and the answer is the sum like 1+2+3+4+5+......+ (2*d)-1.
+*/
+
 #include <bits/stdc++.h>
 // #include <ext/pb_ds/assoc_container.hpp>
 // #include <ext/pb_ds/tree_policy.hpp>
