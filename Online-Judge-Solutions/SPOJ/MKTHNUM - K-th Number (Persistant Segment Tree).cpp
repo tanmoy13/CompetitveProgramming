@@ -1,3 +1,14 @@
+/*
+    Author: Tanmoy Datta
+
+    Solution Idea:
+        - At first we need to compress the values as the range is -10^9 to +10^9.
+        - Insert every number in persistant segment tree and create new versions of segment tree and store every root.
+        - Add 1 to every new inserted nodes as node values.
+        - As a version of persistant segment tree contains the result from version 1 to current version, So using two version
+          j and i-1 we can calculate the answer for range i to j from ans(j) - ans(i-1).
+        - Using this idea we can calculate the answer for this problem by moving towards the leave in segment tree.
+*/
 #include <bits/stdc++.h>
 // #include <ext/pb_ds/assoc_container.hpp>
 // #include <ext/pb_ds/tree_policy.hpp>
@@ -194,4 +205,3 @@ int main()
 
     return 0;
 }
-
