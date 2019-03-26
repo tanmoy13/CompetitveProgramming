@@ -30,6 +30,7 @@ int main() {
 6 Euclidean distance: abs(a - b)
 
 7. Angle of elevation: arg(b - a)
+   (Angle of elevation: Slope of line between points a and b. In other words angle between line (a,b) and positive x axis.) 
 
 8. Slope of line (a, b): tan(arg(b - a))
 
