@@ -10,17 +10,17 @@ struct node
 
 typedef node* pnode;
 
-int sz(pnode t)
+int sz(pnode t) /// Return size of the current subtree
 {
     return t?t->size:0;
 }
 
-void upd_sz(pnode t)
+void upd_sz(pnode t) /// Update size of current subtree
 {
     if(t)t->size=sz(t->l)+1+sz(t->r);
 }
 
-void lazy(pnode t)
+void lazy(pnode t) ///Propagate the lazy value
 {
     if(!t || !t->lazy)return;
     t->val+=t->lazy;//operation of lazy
@@ -35,7 +35,7 @@ void reset(pnode t)
     if(t)t->sum = t->val;//no need to reset lazy coz when we call this lazy would itself be propagated
 }
 
-void combine(pnode& t,pnode l,pnode r) //combining two ranges of segtree
+void combine(pnode& t,pnode l,pnode r) ///combining two ranges of segment tree
 {
     if(!l || !r)return void(t = l?l:r);
     t->sum = l->sum + r->sum;
@@ -51,7 +51,15 @@ void operation(pnode t) //operation of segtree
     combine(t,t,t->r);
 }
 
-void split(pnode t,pnode &l,pnode &r,int pos,int add=0)
+/**
+split : Splits the array A[1..n] into two parts : L[1..pos] , R[pos+1..n] , about "pos". Note that A[pos] comes in the left part.
+merge : merges L[1..n1] , R[1..n2] to form A[1..n1,n1+1,...n2] . Note that the condition for merge in treap
+        (i.e. greatest element in l <= smallest element in r) is satisified here since the keys are array indices and we are
+        assuming that mergin L and R would result in A such that first n1 elements of A come from L and next n2 from R.
+
+**/
+
+void split(pnode t,pnode &l,pnode &r,int pos,int add=0) ///Split node by position
 {
     if(!t)return void(l=r=NULL);
     lazy(t);
@@ -64,8 +72,9 @@ void split(pnode t,pnode &l,pnode &r,int pos,int add=0)
     operation(t);
 }
 
-void merge(pnode &t,pnode l,pnode r)  //l->leftarray,r->rightarray,t->resulting array
+void merge(pnode &t,pnode l,pnode r) /// Merge 2 child node
 {
+    //l->leftarray,r->rightarray,t->resulting array
     lazy(l);
     lazy(r);
     if(!l || !r) t = l?l:r;
@@ -75,7 +84,7 @@ void merge(pnode &t,pnode l,pnode r)  //l->leftarray,r->rightarray,t->resulting 
     operation(t);
 }
 
-pnode init(int val)
+pnode init(int val) ///Initialize a node
 {
     pnode ret = (pnode)malloc(sizeof(node));
     ret->prior=rand();
@@ -86,7 +95,7 @@ pnode init(int val)
     return ret;
 }
 
-int range_query(pnode t,int l,int r) //[l,r]
+int range_query(pnode t,int l,int r) ///Query over range [l,r] where t is root
 {
     pnode L,mid,R;
     split(t,L,mid,l-1);
@@ -97,7 +106,7 @@ int range_query(pnode t,int l,int r) //[l,r]
     return ans;
 }
 
-void range_update(pnode t,int l,int r,int val) //[l,r]
+void range_update(pnode t,int l,int r,int val) /// Range update over range [l,r] whare t is root
 {
     pnode L,mid,R;
     split(t,L,mid,l-1);
@@ -107,43 +116,79 @@ void range_update(pnode t,int l,int r,int val) //[l,r]
     merge(t,mid,R);
 }
 
-//void split(pnode t,pnode &l,pnode &r,int key)
-//{
-//    if(!t) l=r=NULL;
-//    else if(t->val<=key) split(t->r,t->r,r,key),l=t; //elem=key comes in l
-//    else split(t->l,l,t->l,key),r=t;
-//    upd_sz(t);
-//}
-//
-//void insert(pnode &t,pnode it)
-//{
-//    if(!t) t=it;
-//    else if(it->prior>t->prior) split(t,it->l,it->r,it->val),t=it;
-//    else insert(t->val<=it->val?t->r:t->l,it);
-//    upd_sz(t);
-//}
-//
-//void erase(pnode &t,int key)
-//{
-//    if(!t)return;
-//    else if(t->val==key)
-//    {
-//        pnode temp=t;
-//        merge(t,t->l,t->r);
-//        free(temp);
-//    }
-//    else erase(t->val<key?t->r:t->l,key);
-//    upd_sz(t);
-//}
+/**
 
+//split(T,X) :  It splits a given treap T into two different treaps L and R such that L contains all the nodes with
+//              Bk<=X and R contains all the nodes with Bk>X . The original treap T is destroyed/doesn't exist anymore
+//              after the split operation. (The equality can be put on either side depending on your choice wlg.
+//              I prefer equality on the left side and so shall be used further in the blog)
+//
+//
+//merge(L,R) : The merge operation merges two given treaps L and R into a single treap T and L and R are destroyed after
+//             the operation. A very important assumption of the merge operation is that the largest value of L is less
+//             than the smallest value of R (where value refers to the Bk values of the particular node).
+
+
+void split(pnode t,pnode &l,pnode &r,int key)
+{
+    if(!t) l=r=NULL;
+    else if(t->val<=key) split(t->r,t->r,r,key),l=t; //elem=key comes in l
+    else split(t->l,l,t->l,key),r=t;
+    upd_sz(t);
+}
+
+void insert(pnode &t,pnode it) ///Insert a single element in treap. It always keep unique elements.
+{
+    if(!t) t=it;
+    else if(it->prior>t->prior) split(t,it->l,it->r,it->val),t=it;
+    else insert(t->val<=it->val?t->r:t->l,it);
+    upd_sz(t);
+}
+
+void erase(pnode &t,int key) ///Erase an signle element where element is key from treap.
+{
+    if(!t)return;
+    else if(t->val==key)
+    {
+        pnode temp=t;
+        merge(t,t->l,t->r);
+        free(temp);
+    }
+    else erase(t->val<key?t->r:t->l,key);
+    upd_sz(t);
+}
+
+void merge(pnode &t,pnode l,pnode r)
+{
+    if(!l || !r) t=l?l:r;
+    else if(l->prior > r->prior)merge(l->r,l->r,r),t=l;
+    else merge(r->l,l,r->l),t=r;
+    upd_sz(t);
+}
+*/
 
 void output(pnode t)
 {
-    if(!t) return;
+    lazy(t);
+    if(!t)
+    {
+        cerr<<"{}";
+        return;
+    }
+    cerr<<" { ";
+//    cerr<<"("<<t->val.ff<<" "<<t->val.ss<<")"<<" ";
+    cout<<t->val<<" ";
     output(t->l);
-    printf("%d ",t->val);
+//    printf("%d ",t->val);
     output(t->r);
+    cerr<<" } ";
 }
+
+void print_Treap(pnode t)
+{
+    cerr<<"--------------------"<<endl;
+    output(t);
+    cerr<<endl<<"--------------------"<<endl;
 
 /*-------------------------Treap End--------------------------*/
 
