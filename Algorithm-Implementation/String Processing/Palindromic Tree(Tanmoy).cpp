@@ -1,4 +1,11 @@
-///***Note: String must be in 1 based indexing
+///***Note: String must be in 2 based indexing
+
+/**
+    len[idx] = length of the palindromic string which represent this idx node.
+    link[idx] = node of the longest palindromic suffix string of palindromic string represent by node idx.
+    idx = current node
+    t = last processed node
+*/
 
 #define mx 100005
 
