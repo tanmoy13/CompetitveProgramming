@@ -146,3 +146,12 @@ void push_up()
     }
 }
 
+void allclear()
+{
+    root=0;
+    nodeCnt=0;
+    trie[root].clear();
+    lvlnode.clear();
+    ms(ans,0);
+}
+

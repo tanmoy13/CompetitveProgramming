@@ -1,4 +1,4 @@
-///***Note: String must be in 2 based indexing
+///***Note: String must be in 1 based indexing
 
 /**
     len[idx] = length of the palindromic string which represent this idx node.
@@ -27,7 +27,7 @@ void init_tree()
     idx=t=2;
 }
 
-void insert(int p)
+void insert(int p) ///here p is in 1 based indexing
 {
     while(str[p-len[t]-1]!=str[p]) t=link[t];
     int x=link[t];
