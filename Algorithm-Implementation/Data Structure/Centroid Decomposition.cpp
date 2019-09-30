@@ -1,3 +1,9 @@
+/**
+    1. Input the tree.
+    2. call int root=decomposeTree(1);
+    3. Set centroid_par[root]=-1;
+**/
+
 const int maxnode = 100005;
 
 vector<int>tree[maxnode],centroid_tree[maxnode];
@@ -59,7 +65,7 @@ int findCentroid(int u, int par, int total_nodes)
 
     if(isCentroid && total_nodes-child_count[u]<=(total_nodes/2))
         return u;
-    findCentroid(heavy_child,u,total_nodes);
+    return findCentroid(heavy_child,u,total_nodes);
 }
 
 ///calculate single centroid and mark it
@@ -89,73 +95,3 @@ int decomposeTree(int u)
     }
     return cur_centroid;
 }
-
-
-///The below segment depends on the problem
-
-int ans[maxnode];
-
-void update(int u)
-{
-    ans[u]=0;
-    int x=centroid_par[u];
-    while(x!=-1)
-    {
-        ans[x]=min(ans[x],ans[u]+mp[x][u]);
-        x=centroid_par[x];
-    }
-}
-
-int query(int u)
-{
-    int ret=ans[u];
-    int x=centroid_par[u];
-    while(x!=-1)
-    {
-        ret=min(ret,ans[x]+mp[x][u]);
-        x=centroid_par[x];
-    }
-    return ret;
-}
-
-int main()
-{
-//#ifndef ONLINE_JUDGE
-//    freopen("in.txt","r",stdin);
-////	  freopen("out.txt","w",stdout);
-//#endif
-
-    int n,m;
-    sff(n,m);
-
-    for(int i=1; i<n; i++)
-    {
-        int a,b;
-        sff(a,b);
-        tree[a].pb(b);
-        tree[b].pb(a);
-    }
-
-    int root=decomposeTree(1);
-    centroid_par[root]=-1;
-
-    for(int i=0; i<n+4; i++) ans[i]=1e7;
-
-    update(1);
-
-    while(m--)
-    {
-        int a,b;
-        sff(a,b);
-        if(a==1)
-            update(b);
-        else
-            printf("%d\n",query(b));
-    }
-
-    return 0;
-}
-
-
-
-
